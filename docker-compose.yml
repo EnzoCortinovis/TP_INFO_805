@@ -1,0 +1,10 @@
+version: '2'
+services:
+  enzo-web:
+    container_name: threejs-enzo
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3715:3000'
+    restart: unless-stopped
