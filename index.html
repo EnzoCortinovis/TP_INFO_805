@@ -25,33 +25,45 @@
       const spaceTexture = new THREE.TextureLoader().load('space.jpg');
       scene.background = spaceTexture;
 
+      let starsGroup = new THREE.Group();
+      let cubeGroups = new THREE.Group();
+
+      var audio = new Audio('Niwel-Takayama.mp3');
+      
+
       // terre 
 
       const earthTexture = new THREE.TextureLoader().load('images/earth_atmos_2048.jpg');
       const normalTexture = new THREE.TextureLoader().load('images/earth_normal_2048.jpg');
 
       const earth = new THREE.Mesh(
-        new THREE.SphereGeometry(3, 32, 32),
+        new THREE.SphereGeometry(2, 32, 32),
         new THREE.MeshStandardMaterial({
           map: earthTexture,
           normalMap: normalTexture,
         })
       );
+      earth.position.x = 8
+      earth.position.z = 8
+      
 
-      scene.add(earth)
+      starsGroup.add(earth)
 
 
       // Lights
 
-      const pointLight = new THREE.PointLight(0xffffff);
-      pointLight.position.set(5, 5, 5);
+      const pointLight = new THREE.PointLight(0xffffff,2,100);
+      pointLight.position.set(0,0,0);
 
       const ambientLight = new THREE.AmbientLight(0xffffff);
-      scene.add(pointLight, ambientLight);
+      scene.add(pointLight);
+
+      const light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1.5 );
+      scene.add( light ); 
 
       const lightHelper = new THREE.PointLightHelper(pointLight)
-      const gridHelper = new THREE.GridHelper(200, 50)
-      scene.add(lightHelper, gridHelper)
+      //const gridHelper = new THREE.GridHelper(200, 50)
+      scene.add(lightHelper)
 
 
       // Controls and Cam
@@ -62,41 +74,83 @@
 
       const controls = new OrbitControls(camera, renderer.domElement);
 
-      let starsGroup = new THREE.Group();
+      var shape = [];
+      const geometry = new THREE.IcosahedronGeometry(2.5,0);
+      const material = new THREE.MeshNormalMaterial({ color: 0x0000ff });
+      shape[0] = new THREE.Mesh( geometry, material );
+      shape[1] = new THREE.Mesh( geometry, material );
+      shape[2] = new THREE.Mesh( geometry, material );
+      scene.add(shape[0],shape[1],shape[2]);
 
 
       // Functions
+
+      function createBubble(taille, groupe){
+        const geometry = new THREE.SphereGeometry(0.20, 24, 24);
+        const color = THREE.MathUtils.randInt(0, 0xffffff)
+        const material = new THREE.MeshStandardMaterial({ color: color });
+        const bubble = new THREE.Mesh(geometry, material);
+
+        const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(taille)); // génère tab de 3 valeurs rdm entre -5 et 5
+        bubble.position.set(x, y, z);
+        groupe.add(bubble)
+        
+        return bubble
+      }
+      
+      let tabDesCubes = []
+
+      function createCube(){
+        let cubeGroup = new THREE.Group();
+        let cubeTab = []
+        let rdm = THREE.MathUtils.randFloat(1.5,4)
+        for (let i = 0; i < 600; i++) {
+          cubeTab[i] = createBubble(rdm,cubeGroup)
+        }
+        cubeGroup.rotation.x = 2;
+        cubeGroup.rotation.z = 2;
+        const [x,z] = Array(2).fill().map(() => THREE.MathUtils.randFloat(-40,40));
+        const y = THREE.MathUtils.randFloatSpread(40)
+        cubeGroup.position.set(x, y, z);
+        cubeGroups.add(cubeGroup)
+        tabDesCubes.push(cubeGroup)
+        
+      }
 
       function addStar(){
         const geometry = new THREE.SphereGeometry(0.25, 24, 24);
         const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
         const star = new THREE.Mesh(geometry, material);
-
         const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(100)); // génère tab de 3 valeurs rdm entre -100 et 100
-
         star.position.set(x, y, z);
         starsGroup.add(star)
-        
         return star
       }
-      scene.add(starsGroup);
-      let testTab = []
-      for (let i = 0; i < 199; i++) {
-        testTab[i] = addStar()
+      
+      let starsTab = []
+      for (let i = 0; i < 499; i++) {  // création du ciel étoilé
+        starsTab[i] = addStar()
       }
-      //let tab = Array(200).fill().forEach(addStar); // creer 200 étoiles
-      let fruits = ['Apple', 'Banana'];
+      
+      function rotaNeant(){
+        shape[0].rotation.x += 0.07;
+        shape[0].rotation.y -= 0.01;
+        shape[1].rotation.y += 0.03;
+        shape[1].rotation.z -= 0.01;
+        shape[2].rotation.z -= 0.05;
+        shape[2].rotation.x += 0.01;
+      }
 
       function animate(){
         requestAnimationFrame(animate);
         earth.rotation.y += 0.005;
-        starsGroup.rotation.y += 0.05;
-        
-        
-        // testTab.forEach(function(item, index, array) {
-        //   console.log(item, index);
-        //   item.position.set(0,10,1)
-        // });
+        starsGroup.rotation.y += 0.005;
+        cubeGroups.rotation.y -= 0.005;
+        rotaNeant()
+        tabDesCubes.forEach(element => {
+          element.rotation.y += 0.01;
+        });
+      
         controls.update();
 
         renderer.render( scene, camera );
@@ -104,8 +158,20 @@
         
       }
 
-      animate()
+    // AJOUT A LA SCENE
+      scene.add(starsGroup);
+      scene.add(cubeGroups);
       
+    // APPEL DES FONCTIONS
+
+      for (let i = 0; i < 9; i++) {
+          createCube()
+      }
+      animate()
+
+      audio.volume = 0.5;
+      audio.play();
+
     </script>
   </body>
 </html>
