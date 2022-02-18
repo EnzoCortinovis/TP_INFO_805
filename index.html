@@ -28,15 +28,8 @@
       let starsGroup = new THREE.Group();
       let cubeGroups = new THREE.Group();
 
-      //var audio = new Audio('Niwel-Takayama.mp3');
-      document.body.addEventListener("mousemove", function(){
-        var audio = new Audio('Niwel-Takayama.mp3');
-        audio.muted = true;
-        audio.volume = 0.5;
-        audio.play();
-      })
       
-      
+    
 
       // terre 
 
@@ -175,6 +168,15 @@
           createCube()
       }
       animate()
+
+
+      //var audio = new Audio('Niwel-Takayama.mp3');
+      document.body.addEventListener("mousemove", function(){
+        var audio = new Audio('Niwel-Takayama.mp3');
+        audio.muted = true;
+        audio.volume = 0.5;
+        audio.play();
+      })
 
     </script>
   </body>
